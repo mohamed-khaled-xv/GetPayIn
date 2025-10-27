@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
+import { OfflineIndicator } from '../components/shared';
 import { resetAutoLockTimer } from '../hooks/useAutoLockSimple';
 import AllProductsScreen from '../screens/AllProductsScreen';
 import CategoryScreen from '../screens/CategoryScreen';
@@ -48,6 +49,7 @@ function MainTabs() {
           fontFamily: Typography.fontFamily.semiBold,
           fontSize: 18,
         },
+        headerRight: () => <OfflineIndicator />,
       }}
     >
       <Tabs.Screen 

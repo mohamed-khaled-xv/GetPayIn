@@ -3,6 +3,7 @@ import { FlatList, RefreshControl, StatusBar, StyleSheet, View } from 'react-nat
 import { createFakeDeleteHandler } from '../components/shared';
 import { useDeleteProduct, useProducts } from '../hooks/api/useProducts';
 import { resetAutoLockTimer } from '../hooks/useAutoLockSimple';
+import { useNetworkStatus } from '../hooks/useNetworkStatus';
 import { useAppSelector } from '../store';
 
 import { AllProductsCard } from '../components/home';
@@ -11,6 +12,7 @@ export default function AllProductsScreen() {
   const { data, isFetching, refetch } = useProducts();
   const deleteProduct = useDeleteProduct();
   const user = useAppSelector((state) => state.auth.user);
+  const { isOnline } = useNetworkStatus();
   
   const [localProducts, setLocalProducts] = useState(data?.products ?? []);
   
@@ -26,10 +28,16 @@ export default function AllProductsScreen() {
     createFakeDeleteHandler(
       deleteProduct,
       'Product',
-      handleOptimisticDelete,
-      refetch
-    ), [deleteProduct, handleOptimisticDelete, refetch]
+      handleOptimisticDelete
+    ), [deleteProduct, handleOptimisticDelete]
   );
+
+  const handleRefresh = useCallback(() => {
+    resetAutoLockTimer();
+    if (isOnline) {
+      refetch();
+    }
+  }, [isOnline, refetch]);
 
   return (
     <>
@@ -43,10 +51,7 @@ export default function AllProductsScreen() {
           refreshControl={
             <RefreshControl 
               refreshing={isFetching} 
-              onRefresh={() => {
-                resetAutoLockTimer();
-                refetch();
-              }}
+              onRefresh={handleRefresh}
               tintColor="#007AFF"
               colors={['#007AFF']}
             />

@@ -1,3 +1,4 @@
+import NetInfo from '@react-native-community/netinfo';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import React from 'react';
@@ -9,7 +10,13 @@ export const useLogin = () => {
   const dispatch = useAppDispatch();
   
   return useMutation({
-    mutationFn: (credentials: LoginCredentials) => authApi.login(credentials),
+    mutationFn: async (credentials: LoginCredentials) => {
+      const netInfo = await NetInfo.fetch();
+      if (!netInfo.isConnected) {
+        throw new Error('No internet connection. Please check your network and try again.');
+      }
+      return authApi.login(credentials);
+    },
     onMutate: () => {
       dispatch(loginStart());
     },
@@ -32,10 +39,11 @@ export const useLogin = () => {
       }));
     },
     onError: (error: AxiosError<{ message?: string }>) => {
-      console.error('Login error details:', error);
       let message = 'Login failed';
       
-      if (error.response?.data?.message) {
+      if (error.message.includes('No internet connection')) {
+        message = error.message;
+      } else if (error.response?.data?.message) {
         message = error.response.data.message;
       } else if (error.message) {
         message = error.message;

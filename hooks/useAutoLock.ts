@@ -13,7 +13,6 @@ export const useAutoLock = () => {
   const isAuthenticated = useAppSelector(s => s.auth.isAuthenticated);
 
   const resetTimer = useCallback(() => {
-    console.log('Activity detected - resetting auto-lock timer');
     if (timer.current) {
       clearTimeout(timer.current);
     }
@@ -21,7 +20,6 @@ export const useAutoLock = () => {
     
     if (isAuthenticated && !locked) {
       timer.current = setTimeout(() => {
-        console.log('Auto-lock triggered after inactivity');
         dispatch(lock());
       }, INACTIVITY_MS);
     }
@@ -49,7 +47,6 @@ export const useAutoLock = () => {
 
     
     const appStateSubscription = AppState.addEventListener('change', (nextAppState) => {
-      console.log('App state changed to:', nextAppState);
       if (nextAppState !== 'active' && isAuthenticated) {
         
         dispatch(lock());
@@ -83,12 +80,11 @@ export const useAutoLock = () => {
             });
             
             if (result.success) {
-              console.log('Biometric authentication successful');
               dispatch(unlock());
             }
           }
         } catch (error) {
-          console.error('Biometric authentication error:', error);
+          console.log(error)
         }
       })();
     }

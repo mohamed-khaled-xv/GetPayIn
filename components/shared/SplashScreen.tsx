@@ -7,7 +7,7 @@ const SplashScreen = () => {
       <StatusBar barStyle="light-content" backgroundColor="#000000" translucent={false} />
       <View style={styles.content}>
         <Image 
-          source={require('../../assets/images/App-Logo.png')} 
+          source={require('./../../assets/images/AppLogo.png')} 
           style={styles.logo}
           resizeMode="contain"
         />

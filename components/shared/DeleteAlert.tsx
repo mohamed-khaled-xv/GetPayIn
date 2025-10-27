@@ -6,7 +6,6 @@ interface DeleteAlertOptions {
   onConfirm: () => void;
 }
 
-// This will be used with a global alert state or context
 export let showCustomDeleteAlert: ((options: DeleteAlertOptions) => void) | null = null;
 
 export const setDeleteAlertHandler = (handler: (options: DeleteAlertOptions) => void) => {
@@ -17,8 +16,6 @@ export const showDeleteAlert = (options: DeleteAlertOptions) => {
   if (showCustomDeleteAlert) {
     showCustomDeleteAlert(options);
   } else {
-    // Fallback: execute immediately if handler not ready
-    console.warn('Alert handler not initialized, executing delete immediately');
     options.onConfirm();
   }
 };
@@ -69,7 +66,6 @@ export const createOptimisticDeleteHandler = (
       itemName,
       itemTitle: title,
       onConfirm: () => {
-        // Immediately update UI optimistically
         onOptimisticUpdate?.(id);
         
         deleteMutation.mutate(id, {
@@ -82,14 +78,11 @@ export const createOptimisticDeleteHandler = (
             onSuccessCallback?.();
           },
           onError: (error: any) => {
-            console.error('Delete error:', error);
             Toast.show({
               type: 'error',
               text1: 'Error',
               text2: `Failed to delete ${itemName.toLowerCase()}`,
             });
-            // On error, we might want to revert the optimistic update
-            // This would require additional logic to restore the item
           },
         });
       },

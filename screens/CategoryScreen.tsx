@@ -1,18 +1,19 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  FlatList,
-  RefreshControl,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    FlatList,
+    RefreshControl,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { useSelector } from 'react-redux';
 import { CategoryProductsCard } from '../components/categories';
 import { createFakeDeleteHandler } from '../components/shared';
 import { useCategories, useDeleteProduct, useProductsByCategory } from '../hooks/api/useProducts';
 import { resetAutoLockTimer } from '../hooks/useAutoLockSimple';
+import { useNetworkStatus } from '../hooks/useNetworkStatus';
 import { RootState } from '../store';
 import { Typography } from '../styles/typography';
 
@@ -22,6 +23,7 @@ export default function CategoryScreen() {
   const { data: products, isFetching: productsLoading, refetch: refetchProducts } = useProductsByCategory(selectedCategory || '');
   const deleteProduct = useDeleteProduct();
   const user = useSelector((state: RootState) => state.auth.user);
+  const { isOnline } = useNetworkStatus();
   
   const [localProducts, setLocalProducts] = useState(products?.products || []);
   
@@ -42,10 +44,23 @@ export default function CategoryScreen() {
     createFakeDeleteHandler(
       deleteProduct,
       'Product',
-      handleOptimisticDelete,
-      refetchProducts
-    ), [deleteProduct, handleOptimisticDelete, refetchProducts]
+      handleOptimisticDelete
+    ), [deleteProduct, handleOptimisticDelete]
   );
+
+  const handleRefreshProducts = useCallback(() => {
+    resetAutoLockTimer();
+    if (isOnline) {
+      refetchProducts();
+    }
+  }, [isOnline, refetchProducts]);
+
+  const handleRefreshCategories = useCallback(() => {
+    resetAutoLockTimer();
+    if (isOnline) {
+      refetchCategories();
+    }
+  }, [isOnline, refetchCategories]);
 
   const renderCategoryButton = ({ item }: { item: { slug: string; name: string } }) => (
     <TouchableOpacity
@@ -114,10 +129,7 @@ export default function CategoryScreen() {
               refreshControl={
                 <RefreshControl 
                   refreshing={productsLoading} 
-                  onRefresh={() => {
-                    resetAutoLockTimer();
-                    refetchProducts();
-                  }}
+                  onRefresh={handleRefreshProducts}
                 />
               }
               contentContainerStyle={styles.productsContainer}
@@ -144,10 +156,7 @@ export default function CategoryScreen() {
         {categoriesLoading && (
           <RefreshControl 
             refreshing={categoriesLoading} 
-            onRefresh={() => {
-              resetAutoLockTimer();
-              refetchCategories();
-            }}
+            onRefresh={handleRefreshCategories}
           />
         )}
       </View>
